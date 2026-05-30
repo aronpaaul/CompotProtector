@@ -1,7 +1,7 @@
 use super::parse::{DllImports, FuncRef};
 use crate::protect::strenc::cipher;
 
-pub fn build(dlls: &[DllImports], key: u32) -> Vec<u8> {
+pub fn build(dlls: &[DllImports], key: u64) -> Vec<u8> {
     let mut t = Vec::new();
     for dll in dlls {
         pushAsciz(&mut t, &dll.name);

@@ -23,7 +23,7 @@ pub struct Params {
     pub bitmapRva: u32,
     pub pageCount: u32,
     pub lazyInterval: u32,
-    pub masterSeed: u32,
+    pub masterSeed: u64,
     pub stringBackupRva: u32,
     pub integrity: u32,
 }
@@ -61,8 +61,7 @@ impl Params {
             (156, self.bitmapRva),
             (160, self.pageCount),
             (164, self.lazyInterval),
-            (168, self.masterSeed),
-            (172, self.stringBackupRva),
+            (32, self.stringBackupRva),
             (176, ror13("NtQueryInformationProcess")),
             (180, ror13("NtSetInformationThread")),
             (184, ror13("NtClose")),
@@ -70,6 +69,8 @@ impl Params {
         for (off, value) in fields {
             wrU32(&mut p, off, value);
         }
+        wrU32(&mut p, 168, self.masterSeed as u32);
+        wrU32(&mut p, 172, (self.masterSeed >> 32) as u32);
         p
     }
 }

@@ -39,7 +39,7 @@
 .equ P_PAGES, 160
 .equ P_LAZYINT, 164
 .equ P_SEED, 168
-.equ P_SBACKUP, 172
+.equ P_SBACKUP, 32
 .equ P_ICHECK, 140
 .equ P_HQIP, 176
 .equ P_HSIT, 180
@@ -289,10 +289,10 @@ acCopyDone:
     mov   eax, [rdi+P_FLAGS]
     test  eax, FLAG_LAZY
     jnz   acLazy
-    mov   ecx, [rdi+P_SEED]
+    mov   rcx, [rdi+P_SEED]
     mov   edx, TAG_CODE
     call  deriveKey
-    mov   r8d, eax
+    mov   r8, rax
     mov   rcx, rsi
     mov   edx, [rdi+P_CLEN]
     xor   r9d, r9d
@@ -380,10 +380,10 @@ lazyHandler:
     mov   eax, 0x1000
 lhLenOk:
     mov   r14d, eax
-    mov   ecx, [rdi+P_SEED]
+    mov   rcx, [rdi+P_SEED]
     mov   edx, TAG_CODE
     call  deriveKey
-    mov   r8d, eax
+    mov   r8, rax
     mov   rcx, r12
     mov   edx, r14d
     mov   r9d, r13d
@@ -457,10 +457,10 @@ ltPage:
     lea   r9, [rsp+0x30]
     mov   rax, [rdi+P_PVP]
     call  rax
-    mov   ecx, [rdi+P_SEED]
+    mov   rcx, [rdi+P_SEED]
     mov   edx, TAG_CODE
     call  deriveKey
-    mov   r10d, eax
+    mov   r10, rax
     mov   eax, esi
     shl   eax, 12
     mov   r11d, eax
@@ -472,7 +472,7 @@ ltPage:
     mov   r8d, 0x1000
 ltLenOk:
     mov   edx, r8d
-    mov   r8d, r10d
+    mov   r8, r10
     mov   r9d, r11d
     call  crypt
 ltSetBit:
@@ -507,11 +507,11 @@ applyStrings:
 asStr:
     cmp   ebx, r13d
     jae   asDone
-    mov   ecx, [rdi+P_SEED]
+    mov   rcx, [rdi+P_SEED]
     mov   edx, TAG_STRING
     xor   edx, ebx
     call  deriveKey
-    mov   r8d, eax
+    mov   r8, rax
     mov   eax, [rsi]
     lea   rcx, [r12+rax]
     mov   edx, [rsi+4]
@@ -606,11 +606,11 @@ ssCopy:
 ssCopyDone:
     mov   eax, r15d
     add   r14, rax
-    mov   ecx, [rdi+P_SEED]
+    mov   rcx, [rdi+P_SEED]
     mov   edx, TAG_STRING
     xor   edx, ebx
     call  deriveKey
-    mov   r8d, eax
+    mov   r8, rax
     mov   eax, [rsi]
     lea   rcx, [r12+rax]
     mov   edx, r15d
@@ -812,10 +812,10 @@ resolveImports:
     mov   r15, [rax+0x10]
     mov   eax, [rdi+P_ITAB]
     lea   r14, [r15+rax]
-    mov   ecx, [rdi+P_SEED]
+    mov   rcx, [rdi+P_SEED]
     mov   edx, TAG_IMPORT
     call  deriveKey
-    mov   r8d, eax
+    mov   r8, rax
     mov   rcx, r14
     mov   edx, [rdi+P_ILEN]
     xor   r9d, r9d
@@ -930,10 +930,10 @@ xorIat:
     mov   eax, [rdi+P_ITAB]
     lea   rsi, [r15+rax]
     mov   r13d, [rdi+P_IDLL]
-    mov   ecx, [rdi+P_SEED]
+    mov   rcx, [rdi+P_SEED]
     mov   edx, TAG_IMPORT
     call  deriveKey
-    mov   r8d, eax
+    mov   r8, rax
 xiDll:
     test  r13d, r13d
     jz    xiDone
@@ -1234,10 +1234,10 @@ tlsCallback:
     mov   rbx, [rax+0x10]
     mov   esi, [rdi+P_SELFRVA]
     lea   rsi, [rbx+rsi]
-    mov   ecx, [rdi+P_SEED]
+    mov   rcx, [rdi+P_SEED]
     mov   edx, TAG_SELF
     call  deriveKey
-    mov   r8d, eax
+    mov   r8, rax
     mov   rcx, rsi
     mov   edx, [rdi+P_SELFLEN]
     xor   r9d, r9d
@@ -1262,7 +1262,7 @@ crypt:
     push  r15
     mov   rsi, rcx
     mov   r12d, edx
-    mov   r13d, r8d
+    mov   r13, r8
     mov   r14, r13
     mov   rax, 0x9E3779B97F4A7C15
     xor   r14, rax
@@ -1346,17 +1346,26 @@ sipround:
     ret
 
 deriveKey:
-    push  rcx
     push  rdx
-    push  r11
-    mov   r11d, ecx
-    mov   ecx, edx
-    mov   edx, r11d
-    call  vmEval
-    or    eax, 1
-    pop   r11
+    mov   eax, edx
+    mov   rdx, 0x9E3779B97F4A7C15
+    imul  rax, rdx
+    xor   rax, rcx
+    mov   rdx, rax
+    shr   rdx, 30
+    xor   rax, rdx
+    mov   rdx, 0xBF58476D1CE4E5B9
+    imul  rax, rdx
+    mov   rdx, rax
+    shr   rdx, 27
+    xor   rax, rdx
+    mov   rdx, 0x94D049BB133111EB
+    imul  rax, rdx
+    mov   rdx, rax
+    shr   rdx, 31
+    xor   rax, rdx
+    or    rax, 1
     pop   rdx
-    pop   rcx
     ret
 
 vmEval:

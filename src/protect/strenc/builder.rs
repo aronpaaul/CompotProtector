@@ -2,7 +2,7 @@ use super::cipher;
 use super::scanner::Found;
 use crate::protect::pe::image::PeImage;
 
-pub fn encryptAndBuildEntries(img: &mut PeImage, found: &[Found], seed: u32) -> (Vec<u8>, Vec<u8>) {
+pub fn encryptAndBuildEntries(img: &mut PeImage, found: &[Found], seed: u64) -> (Vec<u8>, Vec<u8>) {
     let mut entries = Vec::with_capacity(found.len() * 8);
     let mut backup = Vec::new();
     for (i, f) in found.iter().enumerate() {

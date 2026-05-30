@@ -3,7 +3,7 @@ use crate::protect::pe::image::PeImage;
 use crate::protect::pe::section::rvaToFileOff;
 use crate::protect::strenc::cipher;
 
-pub fn scramble(img: &mut PeImage, seed: u32) -> usize {
+pub fn scramble(img: &mut PeImage, seed: u64) -> usize {
     let key = cipher::deriveKey(seed, cipher::TAG_NAMES);
     let ranges = nameRanges(img);
     let mut pos = 0u32;

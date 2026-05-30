@@ -55,7 +55,7 @@ pub fn apply(
         codeBlob: &codeBlob,
         selfKey: cipher::deriveKey(seed, cipher::TAG_SELF),
         lazyInterval: opts.lazyIntervalMs,
-        masterSeed: seed ^ super::envkey::envExpected(),
+        masterSeed: seed ^ super::envkey::envExpected() as u64,
     };
     let built = layout::build(img, opts, &inp);
 
