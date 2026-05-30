@@ -10,7 +10,7 @@ pub fn envExpected() -> u32 {
     for b in DOS_HEADER {
         h = h.rotate_left(5) ^ b as u32;
     }
-    let c = unsafe { core::arch::x86_64::__cpuid(1) };
+    let c = core::arch::x86_64::__cpuid(1);
     h ^= c.eax;
     h = h.rotate_left(7);
     h ^= c.ecx;
