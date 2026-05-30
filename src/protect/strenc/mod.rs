@@ -1,0 +1,22 @@
+mod builder;
+pub mod cipher;
+mod codeenc;
+mod detect;
+mod envkey;
+mod flags;
+mod injector;
+mod integrity;
+mod layout;
+mod layout_types;
+pub mod params;
+mod scanner;
+mod siphash;
+mod secname;
+mod sections;
+pub mod stub_blob;
+mod util;
+
+pub use detect::tripleCheck;
+pub use injector::apply;
+pub use scanner::scan;
+pub use secname::randomSectionName;

@@ -1,0 +1,13 @@
+pub static STUB: &[u8] = include_bytes!("cprot_stub.bin");
+
+pub const PARAMS_OFF: usize = 0x1020;
+pub const PARAMS_LEN: usize = 192;
+pub const TLS_CALLBACK_OFF: u32 = 0x0d70;
+pub const ENC_END: usize = 0x0d70;
+
+pub const FLAG_REENCRYPT_STRINGS: u32 = 1;
+pub const FLAG_HIDE_IMPORTS: u32 = 2;
+pub const FLAG_REENCRYPT_IMPORTS: u32 = 4;
+pub const FLAG_ANTI_DEBUG: u32 = 8;
+pub const FLAG_LAZY: u32 = 16;
+pub const FLAG_ZERO_STRINGS: u32 = 32;

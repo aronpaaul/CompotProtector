@@ -1,0 +1,6 @@
+/target
+*.o
+*.obj
+/stub/cprot_stub.bin
+/testapp/*.exe
+/tmp
