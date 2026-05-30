@@ -30,6 +30,7 @@ pub fn encrypt(img: &mut PeImage, key: u64) -> Vec<u8> {
         for idx in 0..img.numberOfSections() {
             if section::name(img, idx) == ".text" {
                 section::setCharacteristics(img, idx, DATA_RW);
+                break;
             }
         }
         return img.data[raw..end].to_vec();
