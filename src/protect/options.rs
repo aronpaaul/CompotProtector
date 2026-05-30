@@ -44,7 +44,7 @@ impl Default for StringOptions {
     fn default() -> Self {
         Self {
             encrypt: true,
-            minLength: 5,
+            minLength: 3,
             runtimeReencrypt: true,
             zeroize: false,
             intervalMs: 1500,
