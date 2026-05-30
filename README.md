@@ -5,10 +5,10 @@
 ![target](https://img.shields.io/badge/targets-mingw%20%2B%20msvc-555)
 ![status](https://img.shields.io/badge/status-research-yellow)
 
-A custom Windows x64 PE protector written in Rust, with both a GUI (egui) and an
-auto-activated CLI. It takes an input `.exe`, applies a layered set of obfuscation,
-virtualization and anti-analysis transforms, and writes a hardened binary that
-still runs natively. It targets both MinGW and MSVC produced binaries.
+A custom Windows x64 PE protector written in Rust, driven by a small, scriptable
+command-line interface. It takes an input `.exe`, applies a layered set of
+obfuscation, virtualization and anti-analysis transforms, and writes a hardened
+binary that still runs natively. It targets both MinGW and MSVC produced binaries.
 
 > This is a research and educational project that explores how modern packers
 > raise the bar against static analysis, emulation, debugging and tampering.
@@ -33,7 +33,7 @@ still runs natively. It targets both MinGW and MSVC produced binaries.
 ## Overview
 
 The protector runs a chain of independent passes over the PE. Each pass is
-composable and can be toggled from the CLI or the GUI. The output binary carries
+composable and can be toggled from the command line. The output binary carries
 a small position-independent loader stub, injected as a TLS callback, that
 reverses the transforms in memory before the original entry point runs. Nothing
 is written back to disk: the protected file stays encrypted on disk for its whole
@@ -169,7 +169,7 @@ output.exe   ->   runs natively, decrypts itself in memory only
 ### Strengths
 
 - Layered and composable: every pass is independent and toggleable.
-- Works on both MinGW and MSVC binaries, with a GUI and a CLI.
+- Works on both MinGW and MSVC binaries, from a single scriptable CLI.
 - One-way cipher plus a machine-bound seed defeat trivial offline static recovery
   and the demonstrated Unicorn replay attack.
 - Anti-dump: strings and code are re-encrypted while the process is idle.
@@ -218,7 +218,8 @@ output.exe   ->   runs natively, decrypts itself in memory only
 - The output structure still looks packed (no imports, high entropy) even with
   realistic section names.
 - The short `"> "` string is below the scan threshold and stays plaintext.
-- The tamper response uses a blocking message box, so the dialog has GUI latency.
+- The tamper response uses a blocking message box, so the dialog has some
+  window-creation latency.
 
 ### Done well, but improvable forever
 
@@ -255,7 +256,7 @@ comprotector -i input.exe -o output.exe --no-anti-debug # disable anti-debug
 comprotector -i input.exe -o output.exe --no-virtualize # disable the vm pass
 ```
 
-Run with no arguments to open the GUI.
+Run with no arguments, or with `--help`, to print the full option list.
 
 ---
 

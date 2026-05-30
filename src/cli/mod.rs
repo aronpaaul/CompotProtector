@@ -5,7 +5,7 @@ use crate::protect;
 
 pub fn run(argv: &[String]) -> i32 {
     attachConsole();
-    if argv.iter().any(|a| a == "--help" || a == "-h") {
+    if argv.is_empty() || argv.iter().any(|a| a == "--help" || a == "-h") {
         printHelp();
         return 0;
     }
@@ -34,8 +34,8 @@ pub fn run(argv: &[String]) -> i32 {
 
 fn printHelp() {
     println!(
-        "ComProtector — PE protector\n\n\
-USAGE (CLI is used automatically when launched with arguments):\n  \
+        "ComProtector — PE protector (CLI)\n\n\
+USAGE:\n  \
 comprotector -i <input.exe> -o <output.exe> [options]\n\n\
 OPTIONS:\n  \
 -i, --input <path>      input executable\n  \
@@ -45,7 +45,7 @@ OPTIONS:\n  \
 --no-strings            do not encrypt strings\n  \
 --no-reencrypt          disable runtime re-encryption thread\n  \
 --zero-strings          keep string memory zeroed (shows 0000 in dumps)\n  \
---min-len <n>           minimum string length (default 5)\n  \
+--min-len <n>           minimum string length (default 3)\n  \
 --interval <ms>         string re-encryption period (default 1500)\n  \
 --window <ms>           string re-encrypted window (default 40)\n  \
 --no-hide-imports       keep the import table (do not hide imports)\n  \
@@ -57,7 +57,6 @@ OPTIONS:\n  \
 --no-encrypt-code       do not encrypt the .text section (every function)\n  \
 --lazy                  lazy mode: decrypt .text on-demand via VEH (anti-dump)\n  \
 --lazy-interval <ms>    lazy re-encryption period (default 50)\n  \
---gui                   force the graphical interface\n  \
 -h, --help              show this help"
     );
 }
