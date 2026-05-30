@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-# Дизассемблер x86-64 для лифтера виртуализации (декодер инструкций)
+# x86-64 instruction decoder for the virtualization lifter
 iced-x86 = { version = "1.21", default-features = false, features = ["std", "decoder", "instr_info"] }
 
 [profile.release]
