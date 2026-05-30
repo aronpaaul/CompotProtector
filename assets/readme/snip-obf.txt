@@ -1,0 +1,11 @@
+; ===== BEFORE obfuscation =====  recognizable constants give the algorithm away
+    imul  eax, eax, 0x9E3779B1   ; golden ratio -> grep -> "this is murmur3"
+    mov   edx, eax
+    shr   edx, 13
+    xor   eax, edx               ; the whole KDF reads top to bottom
+
+; ===== AFTER obfuscation =====  constants masked, ops behind a dispatcher
+    movzx ecx, byte [rsi]        ; opcode pulled from encrypted bytecode
+    mov   r11d, [rsi+1]          ; operand
+    xor   r11d, 0xA5A5A5A5       ; un-masked only at runtime
+    imul  eax, r11d              ; the literal constant never appears

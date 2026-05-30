@@ -1,0 +1,13 @@
+; ===== BEFORE virtualization =====  real x86-64, fully readable
+vmDemo:                          ; vmDemo(a, b) = ((a + b) ^ 0x5A) * 3
+    add   ecx, edx               ;   a + b
+    xor   ecx, 0x5A
+    lea   eax, [ecx+ecx*2]       ;   * 3
+    ret
+
+; ===== AFTER virtualization =====  logic lifted into encrypted bytecode
+vmDemo:
+    call  vm_loader              ; dispatch into the bounded interpreter
+; bytecode (encrypted on disk, per-build register permutation):
+;   PUSH r1 ; PUSH r2 ; ADD ; XOR 0x5A ; MUL 3 ; VRET
+; no add / xor / lea ever appears as native x86 again

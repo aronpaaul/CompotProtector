@@ -1,0 +1,9 @@
+; ===== BEFORE mutation =====  build #1 loader bootstrap
+    mov   eax, 0xB16B00B5        ; junk anchor
+    imul  eax, eax, 0xCAFED00D   ; patched at protect time
+    xor   eax, 0x5EED1234        ; seed-derived value
+
+; ===== AFTER mutation =====  build #2, same logic, different bytes
+    mov   eax, 0x3F2A88C1        ; re-rolled from a fresh clock seed
+    imul  eax, eax, 0x91E4D7B3   ; every build is byte-different
+    xor   eax, 0x0A6612FE        ; signatures and diffing do not carry over
