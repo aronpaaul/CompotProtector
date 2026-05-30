@@ -1,0 +1,13 @@
+// BEFORE  -  no integrity check
+//   patch a single byte (jne -> jmp) and the check is bypassed forever
+
+// AFTER  -  a 100 ms thread re-hashes the loader stub and the code blob
+fn integrity_thread() {
+    loop {
+        sleep(100);
+        if fnv1a(stub, code_blob) != expected {  // any patch -> mismatch
+            message_box("tampered, cannot continue");
+            exit(0xDEAD);
+        }
+    }
+}

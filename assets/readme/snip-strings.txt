@@ -1,0 +1,10 @@
+// BEFORE  -  every string sits in the binary as plaintext
+let key = "handcorrect";              // visible in any hex editor / IDA
+puts("enter the key");
+if input == key { puts("yesofcourse"); }
+
+// AFTER  -  encrypted on disk, decrypted only at runtime, then re-encrypted
+let key = decrypt(blob[0x4c], seed);  // ciphertext on disk
+puts(decrypt(blob[0x60], seed));      // "enter the key"
+if input == key { puts(decrypt(blob[0x7a], seed)); }
+// a background thread re-encrypts every string every 100 ms (anti-dump)

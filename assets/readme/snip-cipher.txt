@@ -1,0 +1,10 @@
+// BEFORE  -  murmur3 fmix32 keystream  (invertible, key leaks)
+fn keystream(i: u32, key: u32) -> u8 {
+    fmix32(i.wrapping_mul(GOLD) ^ key) as u8   // known plaintext
+}                                              // -> invert -> recover key
+
+// AFTER  -  siphash-2-4 keystream  (one-way prf, 128-bit state)
+fn keystream(i: u64, k0: u64, k1: u64) -> u8 {
+    let block = siphash24(k0, k1, i >> 3);     // pseudo-random
+    (block >> ((i & 7) * 8)) as u8             // reveals nothing
+}

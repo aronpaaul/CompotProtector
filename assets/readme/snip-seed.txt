@@ -1,0 +1,8 @@
+// BEFORE  -  the seed is a constant in the file (recovered offline)
+let seed = config.seed;                   // unicorn replays it 1:1
+let key  = derive(seed, TAG_CODE);
+
+// AFTER  -  the seed is bound to the real machine and never stored intact
+let env  = hash(ntdll[0..60]) ^ cpuid(1); // not present in the file
+let seed = config.masked_seed ^ env;      // wrong cpu / emulator -> garbage
+let key  = derive(seed, TAG_CODE);        // offline replay decrypts noise
