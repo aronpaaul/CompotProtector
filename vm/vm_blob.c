@@ -127,6 +127,8 @@ static void vmRun(u64 *R, unsigned char *code) {
         else if (alu == 8) { unsigned sh = b & (bits - 1); if (sh) cf = (a >> (bits - sh)) & 1; res = a << sh; of = 0; }
         else if (alu == 9) { unsigned sh = b & (bits - 1); if (sh) cf = (a >> (sh - 1)) & 1; res = (a & mask) >> sh; of = 0; }
         else if (alu == 10) { unsigned sh = b & (bits - 1); if (sh) cf = (a >> (sh - 1)) & 1; res = size == 8 ? (u64)(((i64)a) >> sh) : (u64)(u32)(((int)(u32)a) >> sh); of = 0; }
+        else if (alu == 16) { unsigned sh = b & (bits - 1); res = sh ? ((a << sh) | ((a & mask) >> (bits - sh))) : a; setzs = 0; if (sh) cf = (res & 1); of = 0; }
+        else if (alu == 17) { unsigned sh = b & (bits - 1); res = sh ? (((a & mask) >> sh) | (a << (bits - sh))) : a; setzs = 0; if (sh) cf = (res >> (bits - 1)) & 1; of = 0; }
         res &= mask;
         if (fadd) { cf = res < a; of = ((~(a ^ b) & (a ^ res)) & sign) != 0; }
         if (fsub) { cf = a < b; of = (((a ^ b) & (a ^ res)) & sign) != 0; }

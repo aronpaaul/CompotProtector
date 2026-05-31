@@ -32,6 +32,8 @@ pub fn aluCode(m: Mnemonic) -> Option<u8> {
         Mnemonic::Not => 13,
         Mnemonic::Inc => 14,
         Mnemonic::Dec => 15,
+        Mnemonic::Rol => 16,
+        Mnemonic::Ror => 17,
         _ => return None,
     })
 }
