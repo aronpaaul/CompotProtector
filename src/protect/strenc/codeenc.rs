@@ -16,6 +16,15 @@ pub fn region(img: &PeImage) -> Option<(u32, usize, u32)> {
     None
 }
 
+pub fn textChecksum(img: &PeImage, encryptCode: bool) -> u32 {
+    match region(img) {
+        Some((_, raw, len)) if encryptCode => {
+            super::integrity::checksum(&img.data[raw..raw + len as usize], &[])
+        }
+        _ => 0,
+    }
+}
+
 pub fn prepare(img: &mut PeImage, encryptCode: bool, key: u64) -> (u32, u32, Vec<u8>) {
     match (encryptCode, region(img)) {
         (true, Some((rva, _, len))) => (rva, len, encrypt(img, key)),

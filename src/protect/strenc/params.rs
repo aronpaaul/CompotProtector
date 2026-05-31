@@ -26,11 +26,12 @@ pub struct Params {
     pub masterSeed: u64,
     pub stringBackupRva: u32,
     pub integrity: u32,
+    pub textCheck: u32,
 }
 
 impl Params {
-    pub fn toBytes(&self) -> [u8; 192] {
-        let mut p = [0u8; 192];
+    pub fn toBytes(&self) -> [u8; 196] {
+        let mut p = [0u8; 196];
         let fields = [
             (0, self.flags),
             (4, self.stringCount),
@@ -55,6 +56,7 @@ impl Params {
             (124, self.codeLen),
             (128, self.codeBlobRva),
             (140, self.integrity),
+            (192, self.textCheck),
             (132, self.selfRva),
             (136, self.selfLen),
             (144, ror13("VirtualProtect")),

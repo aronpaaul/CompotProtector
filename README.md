@@ -137,9 +137,10 @@ intact and only resolves on the target machine.
 
 ### Runtime integrity
 
-A dedicated thread re-hashes the loader stub and the encrypted code blob every
-100 ms. Any patch, on disk or in memory, is detected and the process exits with an
-error dialog.
+A dedicated thread re-hashes the loader stub, the encrypted code blob and the
+decrypted code in memory every 100 ms. Any patch, on disk or in memory, including
+flipping a branch in the already-decrypted code, is detected and the process exits
+with an error dialog.
 
 ![anti-tamper before and after](assets/readme/tamper.png)
 

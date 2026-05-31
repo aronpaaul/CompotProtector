@@ -21,7 +21,6 @@ pub fn build(img: &PeImage, opts: &ProtectionOptions, inp: &Inputs) -> Built {
     let importOff = content.len() as u32;
     content.extend_from_slice(inp.importTable);
     align(&mut content, 8);
-
     let origOff = content.len() as u32;
     if inp.hiding {
         push(&mut content, inp.origCallbacks);
@@ -75,6 +74,7 @@ pub fn build(img: &PeImage, opts: &ProtectionOptions, inp: &Inputs) -> Built {
         masterSeed: inp.masterSeed,
         stringBackupRva: va + backupOff,
         integrity: super::integrity::checksum(&STUB[0..ENC_END], inp.codeBlob),
+        textCheck: inp.textCheck,
     };
     content[PARAMS_OFF..PARAMS_OFF + PARAMS_LEN].copy_from_slice(&params.toBytes());
     cipher::stream(&mut content[0..ENC_END], inp.selfKey, 0);

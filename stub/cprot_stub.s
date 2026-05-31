@@ -45,6 +45,7 @@
 .equ P_HSIT, 180
 .equ P_HNTC, 184
 .equ P_TAMPER, 188
+.equ P_TCHECK, 192
 .equ FLAG_LAZY, 16
 .equ FLAG_ZERO_STRINGS, 32
 .equ TAG_SELF, 0x53454C46
@@ -1142,6 +1143,18 @@ icDone:
     pop   rsi
     ret
 
+checkText:
+    push  rsi
+    mov   rax, gs:[0x60]
+    mov   rsi, [rax+0x10]
+    mov   eax, [rdi+P_CRVA]
+    lea   rcx, [rsi+rax]
+    mov   edx, [rdi+P_CLEN]
+    mov   r8d, 0x811C9DC5
+    call  checksum
+    pop   rsi
+    ret
+
 showTamper:
     push  rbp
     mov   rbp, rsp
@@ -1192,6 +1205,15 @@ itLoop:
     call  rax
     call  integrityCheck
     cmp   eax, [rdi+P_ICHECK]
+    jne   itTamper
+    mov   eax, [rdi+P_FLAGS]
+    test  eax, FLAG_LAZY
+    jnz   itLoop
+    mov   eax, [rdi+P_CLEN]
+    test  eax, eax
+    jz    itLoop
+    call  checkText
+    cmp   eax, [rdi+P_TCHECK]
     jne   itTamper
     jmp   itLoop
 itTamper:
@@ -1485,4 +1507,4 @@ ehFail:
 
 .balign 16
 params:
-    .fill 192, 1, 0
+    .fill 196, 1, 0

@@ -39,6 +39,7 @@ pub fn apply(
     let origCallbacks = tls::originalCallbacks(img);
     let flags = buildFlags(opts, hiding);
     let codeKey = cipher::deriveKey(seed, cipher::TAG_CODE);
+    let textCheck = codeenc::textChecksum(img, opts.encryptCode);
     let (codeRva, codeLen, codeBlob) = codeenc::prepare(img, opts.encryptCode, codeKey);
 
     let inp = Inputs {
@@ -56,6 +57,7 @@ pub fn apply(
         selfKey: cipher::deriveKey(seed, cipher::TAG_SELF),
         lazyInterval: opts.lazyIntervalMs,
         masterSeed: seed ^ super::envkey::envExpected() as u64,
+        textCheck,
     };
     let built = layout::build(img, opts, &inp);
 

@@ -13,6 +13,7 @@ pub struct Inputs<'a> {
     pub selfKey: u64,
     pub lazyInterval: u32,
     pub masterSeed: u64,
+    pub textCheck: u32,
 }
 
 pub struct Built {
