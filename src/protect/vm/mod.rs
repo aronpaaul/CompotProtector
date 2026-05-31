@@ -29,7 +29,7 @@ pub fn apply(img: &mut PeImage, opts: &ProtectionOptions) -> io::Result<usize> {
         seed = seed.wrapping_mul(0x9E37_79B9_7F4A_7C15).wrapping_add(0xD1B5_4A32_D192_ED03);
         let region = img.data[target.regionFileOff..target.regionFileOff + target.regionLen].to_vec();
         let poly = poly::generate(seed);
-        let bytecode = match lift::lift(&region, target.regionRva as u64, &poly.regToSlot, poly.shuffleSeed, poly.opXor, poly.aluXor) {
+        let bytecode = match lift::lift(&region, target.regionRva as u64, &poly.regToSlot, poly.shuffleSeed, poly.bytecodeKey) {
             Some(b) => b,
             None => continue,
         };

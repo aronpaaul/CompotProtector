@@ -10,9 +10,19 @@ pub enum Bc {
     Ret,
 }
 
-pub fn serialize(ops: &[Bc], ipToOff: &HashMap<u64, u32>, opXor: u8, aluXor: u8) -> Option<Vec<u8>> {
+pub fn keyAt(base: u32, idx: u32) -> u32 {
+    let mut x = base ^ idx.wrapping_mul(0x9E37_79B1);
+    x ^= x >> 15;
+    x = x.wrapping_mul(0x85EB_CA77);
+    x ^= x >> 13;
+    x = x.wrapping_mul(0xC2B2_AE3D);
+    x ^= x >> 16;
+    x
+}
+
+pub fn serialize(ops: &[Bc], ipToOff: &HashMap<u64, u32>, base: u32) -> Option<Vec<u8>> {
     let mut out = Vec::with_capacity(ops.len() * 16);
-    for op in ops {
+    for (idx, op) in ops.iter().enumerate() {
         let mut w = [0u8; 16];
         match op {
             Bc::Alu { op, size, dst, kind, src, imm } => {
@@ -44,8 +54,9 @@ pub fn serialize(ops: &[Bc], ipToOff: &HashMap<u64, u32>, opXor: u8, aluXor: u8)
             }
             Bc::Ret => w[0] = 0x30,
         }
-        w[0] ^= opXor;
-        w[1] ^= aluXor;
+        let k = keyAt(base, idx as u32);
+        w[0] ^= k as u8;
+        w[1] ^= (k >> 8) as u8;
         out.extend_from_slice(&w);
     }
     Some(out)

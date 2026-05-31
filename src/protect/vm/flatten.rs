@@ -6,7 +6,7 @@ use super::opaque;
 use iced_x86::Instruction;
 use std::collections::HashMap;
 
-pub fn tryFlatten(instrs: &[Instruction], perm: &[u8; 16], seed: u64, opXor: u8, aluXor: u8) -> Option<Vec<u8>> {
+pub fn tryFlatten(instrs: &[Instruction], perm: &[u8; 16], seed: u64, base: u32) -> Option<Vec<u8>> {
     if instrs.len() < 3 {
         return None;
     }
@@ -34,7 +34,7 @@ pub fn tryFlatten(instrs: &[Instruction], perm: &[u8; 16], seed: u64, opXor: u8,
         }
         bodies.push(ops);
     }
-    assemble(&blocks, &bodies, seed, opXor, aluXor)
+    assemble(&blocks, &bodies, seed, base)
 }
 
 fn shuffle(n: usize, seed: u64) -> Vec<usize> {
@@ -50,7 +50,7 @@ fn shuffle(n: usize, seed: u64) -> Vec<usize> {
     order
 }
 
-fn assemble(blocks: &[Block], bodies: &[Vec<Bc>], seed: u64, opXor: u8, aluXor: u8) -> Option<Vec<u8>> {
+fn assemble(blocks: &[Block], bodies: &[Vec<Bc>], seed: u64, base: u32) -> Option<Vec<u8>> {
     let n = blocks.len();
     let order: Vec<usize> = shuffle(n, seed);
     let pieceLen: Vec<usize> = (0..n).map(|k| bodies[k].len() + transLen(&blocks[k].term)).collect();
@@ -73,5 +73,5 @@ fn assemble(blocks: &[Block], bodies: &[Vec<Bc>], seed: u64, opXor: u8, aluXor: 
         }
         emitTrans(&mut out, &blocks[k].term, base + bodies[k].len());
     }
-    bc::serialize(&out, &HashMap::new(), opXor, aluXor)
+    bc::serialize(&out, &HashMap::new(), base)
 }

@@ -4,12 +4,12 @@ use super::{flatten, opaque};
 use iced_x86::{Decoder, DecoderOptions, Instruction};
 use std::collections::HashMap;
 
-pub fn lift(bytes: &[u8], ipBase: u64, perm: &[u8; 16], seed: u64, opXor: u8, aluXor: u8) -> Option<Vec<u8>> {
+pub fn lift(bytes: &[u8], ipBase: u64, perm: &[u8; 16], seed: u64, base: u32) -> Option<Vec<u8>> {
     let instrs = decodeAll(bytes, ipBase)?;
-    if let Some(flat) = flatten::tryFlatten(&instrs, perm, seed, opXor, aluXor) {
+    if let Some(flat) = flatten::tryFlatten(&instrs, perm, seed, base) {
         return Some(flat);
     }
-    linear(&instrs, perm, opXor, aluXor)
+    linear(&instrs, perm, base)
 }
 
 fn decodeAll(bytes: &[u8], ipBase: u64) -> Option<Vec<Instruction>> {
@@ -26,7 +26,7 @@ fn decodeAll(bytes: &[u8], ipBase: u64) -> Option<Vec<Instruction>> {
     Some(instrs)
 }
 
-fn linear(instrs: &[Instruction], perm: &[u8; 16], opXor: u8, aluXor: u8) -> Option<Vec<u8>> {
+fn linear(instrs: &[Instruction], perm: &[u8; 16], base: u32) -> Option<Vec<u8>> {
     let mut ops: Vec<Bc> = Vec::new();
     let mut ipToOff: HashMap<u64, u32> = HashMap::new();
     let mut elig = 0usize;
@@ -41,5 +41,5 @@ fn linear(instrs: &[Instruction], perm: &[u8; 16], opXor: u8, aluXor: u8) -> Opt
         liftOne(ins, &mut ops, perm)?;
     }
     ops.push(Bc::Ret);
-    bc::serialize(&ops, &ipToOff, opXor, aluXor)
+    bc::serialize(&ops, &ipToOff, base)
 }

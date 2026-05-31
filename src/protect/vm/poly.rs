@@ -8,8 +8,6 @@ pub struct Poly {
     pub codeKey: u32,
     pub bytecodeKey: u32,
     pub shuffleSeed: u64,
-    pub opXor: u8,
-    pub aluXor: u8,
 }
 
 pub fn generate(mut seed: u64) -> Poly {
@@ -17,8 +15,6 @@ pub fn generate(mut seed: u64) -> Poly {
     let codeKey = next(&mut seed) as u32 | 1;
     let bytecodeKey = next(&mut seed) as u32 | 1;
     let shuffleSeed = next(&mut seed);
-    let opXor = bytecodeKey as u8;
-    let aluXor = (bytecodeKey >> 8) as u8;
     let slotToReg = permutation(&mut seed);
     let mut regToSlot = [0u8; 16];
     for (slot, &reg) in slotToReg.iter().enumerate() {
@@ -29,7 +25,7 @@ pub fn generate(mut seed: u64) -> Poly {
         blob = BLOB.to_vec();
         regToSlot = identity();
     }
-    Poly { blob, regToSlot, codeKey, bytecodeKey, shuffleSeed, opXor, aluXor }
+    Poly { blob, regToSlot, codeKey, bytecodeKey, shuffleSeed }
 }
 
 fn permutation(seed: &mut u64) -> [u8; 16] {
