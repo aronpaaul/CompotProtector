@@ -1,21 +1,32 @@
 use super::bc::{self, Bc};
 use super::map::{aluCode, condCode, gpr, immValue, isUnary};
-use super::mba;
+use super::{mba, opaque};
 use iced_x86::{Decoder, DecoderOptions, Instruction, Mnemonic, OpKind};
 use std::collections::HashMap;
 
 pub fn lift(bytes: &[u8], ipBase: u64, perm: &[u8; 16]) -> Option<Vec<u8>> {
     let mut dec = Decoder::with_ip(64, bytes, ipBase, DecoderOptions::NONE);
-    let mut ops: Vec<Bc> = Vec::new();
-    let mut ipToOff: HashMap<u64, u32> = HashMap::new();
+    let mut instrs: Vec<Instruction> = Vec::new();
     let mut instr = Instruction::default();
     while dec.can_decode() {
         dec.decode_out(&mut instr);
         if instr.is_invalid() {
             return None;
         }
-        ipToOff.insert(instr.ip(), (ops.len() * 16) as u32);
-        liftOne(&instr, &mut ops, perm)?;
+        instrs.push(instr);
+    }
+    let mut ops: Vec<Bc> = Vec::new();
+    let mut ipToOff: HashMap<u64, u32> = HashMap::new();
+    let mut elig = 0usize;
+    for ins in &instrs {
+        if opaque::eligible(ins.mnemonic()) {
+            if elig % 2 == 0 {
+                opaque::emit(&mut ops, elig);
+            }
+            elig += 1;
+        }
+        ipToOff.insert(ins.ip(), (ops.len() * 16) as u32);
+        liftOne(ins, &mut ops, perm)?;
     }
     ops.push(Bc::Ret);
     bc::serialize(&ops, &ipToOff)
@@ -70,9 +81,5 @@ fn liftOne(instr: &Instruction, ops: &mut Vec<Bc>, perm: &[u8; 16]) -> Option<()
 }
 
 fn wantBranch(instr: &Instruction) -> Option<()> {
-    if instr.op0_kind() == OpKind::NearBranch64 {
-        Some(())
-    } else {
-        None
-    }
+    (instr.op0_kind() == OpKind::NearBranch64).then_some(())
 }

@@ -4,6 +4,7 @@ mod lift;
 mod map;
 mod markers;
 mod mba;
+mod opaque;
 mod patch;
 mod poly;
 mod pushpop;

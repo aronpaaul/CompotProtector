@@ -4,6 +4,7 @@ pub enum Bc {
     Alu { op: u8, size: u8, dst: u8, kind: u8, src: u8, imm: i64 },
     Jmp(u64),
     Jcc(u8, u64),
+    JccAbs(u8, u32),
     Ret,
 }
 
@@ -29,6 +30,11 @@ pub fn serialize(ops: &[Bc], ipToOff: &HashMap<u64, u32>) -> Option<Vec<u8>> {
                 w[0] = 0x21;
                 w[1] = *cond;
                 w[8..12].copy_from_slice(&ipToOff.get(ip)?.to_le_bytes());
+            }
+            Bc::JccAbs(cond, off) => {
+                w[0] = 0x21;
+                w[1] = *cond;
+                w[8..12].copy_from_slice(&off.to_le_bytes());
             }
             Bc::Ret => w[0] = 0x30,
         }
