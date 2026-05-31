@@ -1278,6 +1278,11 @@ tlsCallback:
     mov   edx, [rdi+P_SELFLEN]
     xor   r9d, r9d
     call  crypt
+    mov   rcx, rsi
+    mov   edx, [rdi+P_SELFLEN]
+    mov   r8d, 0x811C9DC5
+    call  checksum
+    xor   [rdi+P_SEED], eax
     add   rsp, 0x20
     pop   rdi
     pop   rsi

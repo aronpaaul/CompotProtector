@@ -38,6 +38,7 @@ pub fn apply(
 
     let origCallbacks = tls::originalCallbacks(img);
     let flags = buildFlags(opts, hiding);
+    let stubBind = super::integrity::checksum(&super::stub_blob::STUB[0..super::stub_blob::ENC_END], &[]) as u64;
     let codeKey = cipher::deriveKey(seed, cipher::TAG_CODE);
     let textCheck = codeenc::textChecksum(img, opts.encryptCode);
     let (codeRva, codeLen, codeBlob) = codeenc::prepare(img, opts.encryptCode, codeKey);
@@ -54,9 +55,9 @@ pub fn apply(
         codeRva,
         codeLen,
         codeBlob: &codeBlob,
-        selfKey: cipher::deriveKey(seed, cipher::TAG_SELF),
+        selfKey: cipher::deriveKey(seed ^ stubBind, cipher::TAG_SELF),
         lazyInterval: opts.lazyIntervalMs,
-        masterSeed: seed ^ super::envkey::envExpected() as u64,
+        masterSeed: seed ^ super::envkey::envExpected() as u64 ^ stubBind,
         textCheck,
     };
     let built = layout::build(img, opts, &inp);
