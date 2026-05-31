@@ -1,5 +1,9 @@
+mod asm;
 mod bc;
 mod blob;
+mod cfg;
+mod emit;
+mod flatten;
 mod lift;
 mod map;
 mod markers;

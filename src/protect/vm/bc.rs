@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+#[derive(Clone, Copy)]
 pub enum Bc {
     Alu { op: u8, size: u8, dst: u8, kind: u8, src: u8, imm: i64 },
     Jmp(u64),
