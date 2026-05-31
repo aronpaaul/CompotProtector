@@ -12,13 +12,14 @@ pub struct ProtectReport {
     pub stringsDetected: bool,
     pub encryptedCode: usize,
     pub poisonedDirs: usize,
+    pub poisonedSections: usize,
     pub outputBytes: usize,
 }
 
 impl ProtectReport {
     pub fn summary(&self) -> String {
         format!(
-            "symbols stripped: {} | debug sections removed: {} | strings detected: {} encrypted: {} (re-encrypt: {}) | imports hidden: {} funcs in {} dlls (re-encrypt: {}) | anti-debug: {} | virtualized regions: {} | .text encrypted: {} bytes | poisoned dirs: {} | output: {} bytes",
+            "symbols stripped: {} | debug sections removed: {} | strings detected: {} encrypted: {} (re-encrypt: {}) | imports hidden: {} funcs in {} dlls (re-encrypt: {}) | anti-debug: {} | virtualized regions: {} | .text encrypted: {} bytes | poisoned dirs: {} | poisoned sections: {} | output: {} bytes",
             self.symbolsStripped,
             self.removedDebugSections,
             onoff(self.stringsDetected),
@@ -31,6 +32,7 @@ impl ProtectReport {
             self.virtualizedRegions,
             self.encryptedCode,
             self.poisonedDirs,
+            self.poisonedSections,
             self.outputBytes
         )
     }

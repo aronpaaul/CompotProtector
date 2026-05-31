@@ -79,7 +79,7 @@ pub fn apply(
         codeenc::zeroText(img);
         rep.encryptedCode = codeLen as usize;
     }
-    sections::finalize(img);
+    rep.poisonedSections = sections::finalize(img);
 
     rep.reencryptStrings = flags & FLAG_REENCRYPT_STRINGS != 0;
     rep.reencryptImports = flags & FLAG_REENCRYPT_IMPORTS != 0;
