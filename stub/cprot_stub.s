@@ -1300,7 +1300,8 @@ crypt:
     mov   r12d, edx
     mov   r13, r8
     mov   r14, r13
-    mov   rax, 0x9E3779B97F4A7C15
+    mov   rax, 0xE0ACF1BBCDCBFA53
+    rol   rax, 13
     xor   r14, rax
     mov   r15d, r9d
     xor   ebx, ebx
@@ -1333,26 +1334,32 @@ cryptDone:
 
 sipBlock:
     mov   r8, r13
-    mov   rdx, 0x736F6D6570736575
+    mov   rdx, 0xEAE6DEDACAE0E6CA
+    rol   rdx, 7
     xor   r8, rdx
     mov   r9, r14
-    mov   rdx, 0x646F72616E646F6D
+    mov   rdx, 0xEDAC8DEE4C2DCC8D
+    rol   rdx, 11
     xor   r9, rdx
     mov   r10, r13
-    mov   rdx, 0x6C7967656E657261
+    mov   rdx, 0xAE4C2D8F2CECADCC
+    rol   rdx, 19
     xor   r10, rdx
     mov   rax, r14
-    mov   rdx, 0x7465646279746573
+    mov   rdx, 0xE8CAE6E8CAC8C4F2
+    rol   rdx, 23
     xor   rax, rdx
     xor   rax, rcx
     call  sipround
     call  sipround
     xor   r8, rcx
-    mov   rdx, 0x0800000000000000
+    mov   rdx, 0x0000000040000000
+    rol   rdx, 29
     xor   rax, rdx
     call  sipround
     call  sipround
-    mov   rdx, 0x0800000000000000
+    mov   rdx, 0x0000000010000000
+    rol   rdx, 31
     xor   r8, rdx
     xor   r10b, 0xFF
     call  sipround
@@ -1384,18 +1391,21 @@ sipround:
 deriveKey:
     push  rdx
     mov   eax, edx
-    mov   rdx, 0x9E3779B97F4A7C15
+    mov   rdx, 0xE0ACF1BBCDCBFA53
+    rol   rdx, 13
     imul  rax, rdx
     xor   rax, rcx
     mov   rdx, rax
     shr   rdx, 30
     xor   rax, rdx
-    mov   rdx, 0xBF58476D1CE4E5B9
+    mov   rdx, 0x72DCDFAC23B68E72
+    rol   rdx, 17
     imul  rax, rdx
     mov   rdx, rax
     shr   rdx, 27
     xor   rax, rdx
-    mov   rdx, 0x94D049BB133111EB
+    mov   rdx, 0xD899888F5CA6824D
+    rol   rdx, 37
     imul  rax, rdx
     mov   rdx, rax
     shr   rdx, 31
