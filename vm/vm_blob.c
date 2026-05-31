@@ -3,7 +3,7 @@ typedef long long i64;
 typedef unsigned int u32;
 
 static int condEval(unsigned char c, int zf, int sf, int of, int cf);
-__attribute__((used)) static void vmRun(u64 *R, unsigned char *code);
+__attribute__((used)) static void vmRun(u64 *R, unsigned char *code, u32 masks);
 void vmEnter(void);
 
 #ifndef VM_TEST
@@ -64,6 +64,7 @@ __attribute__((naked, used)) void vmEnter(void) {
         "jmp 1b\n"
         "2:\n"
         "mov rcx, rbx\n"
+        "mov r8d, edx\n"
         "mov rdx, rdi\n"
         "sub rsp, 0x20\n"
         "and rsp, -16\n"
@@ -92,21 +93,22 @@ static int condEval(unsigned char c, int zf, int sf, int of, int cf) {
 static inline u64 rd(u64 *R, u64 *S, unsigned i) { return i < 16 ? R[i] : S[i - 16]; }
 static inline void wr(u64 *R, u64 *S, unsigned i, u64 v) { if (i < 16) R[i] = v; else S[i - 16] = v; }
 
-static void vmRun(u64 *R, unsigned char *code) {
+static void vmRun(u64 *R, unsigned char *code, u32 masks) {
     u32 pc = 0;
     u64 S[16] = {0};
+    unsigned char opXor = masks & 0xff, aluXor = (masks >> 8) & 0xff;
     int zf = 0, sf = 0, of = 0, cf = 0;
     for (;;) {
         unsigned char *in = code + pc;
-        unsigned char op = in[0];
+        unsigned char op = in[0] ^ opXor;
         if (op == 0x30) return;
         if (op == 0x20) { pc = *(u32 *)(in + 8); continue; }
         if (op == 0x21) {
-            int take = condEval(in[1], zf, sf, of, cf);
+            int take = condEval(in[1] ^ aluXor, zf, sf, of, cf);
             pc = take ? *(u32 *)(in + 8) : pc + 16;
             continue;
         }
-        unsigned char alu = in[1], size = in[2], dst = in[3], kind = in[4], src = in[5];
+        unsigned char alu = in[1] ^ aluXor, size = in[2], dst = in[3], kind = in[4], src = in[5];
         i64 imm = *(i64 *)(in + 8);
         u64 mask = size == 8 ? ~0ull : 0xffffffffull;
         u64 sign = size == 8 ? 0x8000000000000000ull : 0x80000000ull;

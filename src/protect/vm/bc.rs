@@ -10,7 +10,7 @@ pub enum Bc {
     Ret,
 }
 
-pub fn serialize(ops: &[Bc], ipToOff: &HashMap<u64, u32>) -> Option<Vec<u8>> {
+pub fn serialize(ops: &[Bc], ipToOff: &HashMap<u64, u32>, opXor: u8, aluXor: u8) -> Option<Vec<u8>> {
     let mut out = Vec::with_capacity(ops.len() * 16);
     for op in ops {
         let mut w = [0u8; 16];
@@ -44,6 +44,8 @@ pub fn serialize(ops: &[Bc], ipToOff: &HashMap<u64, u32>) -> Option<Vec<u8>> {
             }
             Bc::Ret => w[0] = 0x30,
         }
+        w[0] ^= opXor;
+        w[1] ^= aluXor;
         out.extend_from_slice(&w);
     }
     Some(out)
