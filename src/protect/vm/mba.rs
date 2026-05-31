@@ -77,4 +77,10 @@ pub fn liftAlu(op: u8, size: u8, dst: u8, kind: u8, src: u8, imm: i64, ops: &mut
     emitOp(0, size, b, kind, src, imm, ops);
     let res = expand(op, a, b, LEVEL, size, &mut t, ops);
     emitOp(0, size, dst, 0, res, 0, ops);
+    if op == 1 {
+        emitOp(0, size, SCRATCH + 2, 0, a, 0, ops);
+        emitOp(1, size, SCRATCH + 2, 0, b, 0, ops);
+    } else {
+        emitOp(11, size, dst, 0, dst, 0, ops);
+    }
 }
