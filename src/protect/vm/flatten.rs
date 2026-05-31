@@ -6,7 +6,7 @@ use super::opaque;
 use iced_x86::Instruction;
 use std::collections::HashMap;
 
-pub fn tryFlatten(instrs: &[Instruction], perm: &[u8; 16]) -> Option<Vec<u8>> {
+pub fn tryFlatten(instrs: &[Instruction], perm: &[u8; 16], seed: u64) -> Option<Vec<u8>> {
     if instrs.len() < 3 {
         return None;
     }
@@ -34,12 +34,25 @@ pub fn tryFlatten(instrs: &[Instruction], perm: &[u8; 16]) -> Option<Vec<u8>> {
         }
         bodies.push(ops);
     }
-    assemble(&blocks, &bodies)
+    assemble(&blocks, &bodies, seed)
 }
 
-fn assemble(blocks: &[Block], bodies: &[Vec<Bc>]) -> Option<Vec<u8>> {
+fn shuffle(n: usize, seed: u64) -> Vec<usize> {
+    let mut order: Vec<usize> = (0..n).collect();
+    let mut s = seed | 1;
+    let mut i = n;
+    while i > 1 {
+        i -= 1;
+        s = s.wrapping_mul(6364136223846793005).wrapping_add(1442695040888963407);
+        let j = ((s >> 33) % (i as u64 + 1)) as usize;
+        order.swap(i, j);
+    }
+    order
+}
+
+fn assemble(blocks: &[Block], bodies: &[Vec<Bc>], seed: u64) -> Option<Vec<u8>> {
     let n = blocks.len();
-    let order: Vec<usize> = (0..n).rev().collect();
+    let order: Vec<usize> = shuffle(n, seed);
     let pieceLen: Vec<usize> = (0..n).map(|k| bodies[k].len() + transLen(&blocks[k].term)).collect();
     let mut baseOp = vec![0usize; n];
     let mut cursor = 2 * n + 1;

@@ -7,12 +7,14 @@ pub struct Poly {
     pub regToSlot: [u8; 16],
     pub codeKey: u32,
     pub bytecodeKey: u32,
+    pub shuffleSeed: u64,
 }
 
-pub fn generate() -> Poly {
-    let mut seed = clockSeed();
+pub fn generate(mut seed: u64) -> Poly {
+    seed |= 1;
     let codeKey = next(&mut seed) as u32 | 1;
     let bytecodeKey = next(&mut seed) as u32 | 1;
+    let shuffleSeed = next(&mut seed);
     let slotToReg = permutation(&mut seed);
     let mut regToSlot = [0u8; 16];
     for (slot, &reg) in slotToReg.iter().enumerate() {
@@ -23,7 +25,7 @@ pub fn generate() -> Poly {
         blob = BLOB.to_vec();
         regToSlot = identity();
     }
-    Poly { blob, regToSlot, codeKey, bytecodeKey }
+    Poly { blob, regToSlot, codeKey, bytecodeKey, shuffleSeed }
 }
 
 fn permutation(seed: &mut u64) -> [u8; 16] {
@@ -52,7 +54,7 @@ fn next(state: &mut u64) -> u64 {
     *state >> 33
 }
 
-fn clockSeed() -> u64 {
+pub fn clockSeed() -> u64 {
     SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .map(|d| d.as_nanos() as u64)

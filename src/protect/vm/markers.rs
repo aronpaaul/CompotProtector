@@ -13,36 +13,46 @@ pub struct Target {
     pub regionLen: usize,
 }
 
-pub fn find(img: &PeImage) -> Option<Target> {
-    let idx = textIndex(img)?;
+pub fn findAll(img: &PeImage) -> Vec<Target> {
+    let idx = match textIndex(img) {
+        Some(i) => i,
+        None => return Vec::new(),
+    };
     let start = section::rawPtr(img, idx) as usize;
     let len = section::rawSize(img, idx) as usize;
     let va = section::virtualAddr(img, idx);
     let end = (start + len).min(img.data.len());
     let data = &img.data[start..end];
-    let b = findSeq(data, &BEGIN)?;
-    let e = findSeq(data, &END)?;
-    if e < b + 8 {
-        return None;
+    let mut targets = Vec::new();
+    let mut pos = 0usize;
+    while let Some(b) = findFrom(data, &BEGIN, pos) {
+        let e = match findFrom(data, &END, b + 8) {
+            Some(e) => e,
+            None => break,
+        };
+        pos = e + 8;
+        if b < 2 || e < b + 10 {
+            continue;
+        }
+        targets.push(Target {
+            blockFileOff: start + b - 2,
+            blockRva: va + (b - 2) as u32,
+            blockLen: (e + 8) - (b - 2),
+            regionFileOff: start + b + 8,
+            regionRva: va + (b + 8) as u32,
+            regionLen: (e - 2) - (b + 8),
+        });
     }
-    let blockStart = b - 2;
-    let blockEnd = e + 8;
-    let regionStart = b + 8;
-    let regionEnd = e - 2;
-    Some(Target {
-        blockFileOff: start + blockStart,
-        blockRva: va + blockStart as u32,
-        blockLen: blockEnd - blockStart,
-        regionFileOff: start + regionStart,
-        regionRva: va + regionStart as u32,
-        regionLen: regionEnd - regionStart,
-    })
+    targets
 }
 
 fn textIndex(img: &PeImage) -> Option<u16> {
     (0..img.numberOfSections()).find(|&i| section::name(img, i) == ".text")
 }
 
-fn findSeq(haystack: &[u8], needle: &[u8; 8]) -> Option<usize> {
-    haystack.windows(8).position(|w| w == needle)
+fn findFrom(haystack: &[u8], needle: &[u8; 8], from: usize) -> Option<usize> {
+    if from >= haystack.len() {
+        return None;
+    }
+    haystack[from..].windows(8).position(|w| w == needle).map(|p| p + from)
 }

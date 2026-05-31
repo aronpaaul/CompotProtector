@@ -4,9 +4,9 @@ use super::{flatten, opaque};
 use iced_x86::{Decoder, DecoderOptions, Instruction};
 use std::collections::HashMap;
 
-pub fn lift(bytes: &[u8], ipBase: u64, perm: &[u8; 16]) -> Option<Vec<u8>> {
+pub fn lift(bytes: &[u8], ipBase: u64, perm: &[u8; 16], seed: u64) -> Option<Vec<u8>> {
     let instrs = decodeAll(bytes, ipBase)?;
-    if let Some(flat) = flatten::tryFlatten(&instrs, perm) {
+    if let Some(flat) = flatten::tryFlatten(&instrs, perm, seed) {
         return Some(flat);
     }
     linear(&instrs, perm)
