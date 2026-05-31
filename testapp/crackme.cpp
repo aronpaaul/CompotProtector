@@ -13,7 +13,7 @@ int main() {
     if (scanf("%63s", key) != 1) {
         return 0;
     }
-    if (strcmp(key, "handcorrect") == 0) {
+    if (strcmp(key, "claudecoding4.8model") == 0) {
         printf("yesofcourse\n");
     } else {
         printf("nononoooo\n");
