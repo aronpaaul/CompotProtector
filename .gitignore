@@ -4,3 +4,11 @@
 /stub/cprot_stub.bin
 /testapp/*.exe
 /tmp
+
+# local reverse-engineering / analysis artifacts (never publish)
+f/
+fixes.md
+modernprots.md
+*-patched*.exe
+*-encrypted.exe
+*_dec.bin
