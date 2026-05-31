@@ -53,6 +53,7 @@ OPTIONS:\n  \
 --import-interval <ms>  import re-encryption period (default 2000)\n  \
 --import-window <ms>    import re-encrypted window (default 12)\n  \
 --no-anti-debug         disable the anti-debugger checks\n  \
+--anti-vm               exit if a hypervisor / sandbox is detected (opt-in)\n  \
 --no-virtualize         disable code virtualization of marked regions\n  \
 --no-encrypt-code       do not encrypt the .text section (every function)\n  \
 --lazy                  lazy mode: decrypt .text on-demand via VEH (anti-dump)\n  \

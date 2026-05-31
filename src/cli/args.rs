@@ -30,6 +30,7 @@ pub fn parse(argv: &[String]) -> Result<Parsed, String> {
             "--import-interval" => opts.imports.intervalMs = numeric(argv, &mut i, arg)?,
             "--import-window" => opts.imports.windowMs = numeric(argv, &mut i, arg)?,
             "--no-anti-debug" => opts.antiDebug = false,
+            "--anti-vm" => opts.antiVm = true,
             "--no-virtualize" => opts.virtualize = false,
             "--no-encrypt-code" => opts.encryptCode = false,
             "--lazy" => opts.lazy = true,

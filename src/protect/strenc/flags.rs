@@ -1,6 +1,6 @@
 use super::stub_blob::{
-    FLAG_ANTI_DEBUG, FLAG_HIDE_IMPORTS, FLAG_LAZY, FLAG_REENCRYPT_IMPORTS, FLAG_REENCRYPT_STRINGS,
-    FLAG_ZERO_STRINGS,
+    FLAG_ANTI_DEBUG, FLAG_ANTI_VM, FLAG_HIDE_IMPORTS, FLAG_LAZY, FLAG_REENCRYPT_IMPORTS,
+    FLAG_REENCRYPT_STRINGS, FLAG_ZERO_STRINGS,
 };
 use crate::protect::options::ProtectionOptions;
 
@@ -22,6 +22,9 @@ pub fn buildFlags(opts: &ProtectionOptions, hiding: bool) -> u32 {
     }
     if opts.antiDebug {
         flags |= FLAG_ANTI_DEBUG;
+    }
+    if opts.antiVm {
+        flags |= FLAG_ANTI_VM;
     }
     flags
 }

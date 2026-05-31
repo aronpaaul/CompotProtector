@@ -90,6 +90,11 @@ _start:
     jz    stNoAd
     call  antiDebug
 stNoAd:
+    mov   eax, [rdi+P_FLAGS]
+    test  eax, 64
+    jz    stNoVm
+    call  antiVm
+stNoVm:
     call  integrityCheck
     cmp   eax, [rdi+P_ICHECK]
     je    stIntOk
@@ -212,6 +217,15 @@ adKill:
     call  rax
 adHard:
     ud2
+
+antiVm:
+    push  rbx
+    mov   eax, 1
+    cpuid
+    bt    ecx, 31
+    pop   rbx
+    jc    adKill
+    ret
 
 callOriginals:
     push  rbp
