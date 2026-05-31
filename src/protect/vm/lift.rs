@@ -1,5 +1,6 @@
 use super::bc::{self, Bc};
 use super::map::{aluCode, condCode, gpr, immValue, isUnary};
+use super::mba;
 use iced_x86::{Decoder, DecoderOptions, Instruction, Mnemonic, OpKind};
 use std::collections::HashMap;
 
@@ -57,11 +58,11 @@ fn liftOne(instr: &Instruction, ops: &mut Vec<Bc>, perm: &[u8; 16]) -> Option<()
     match instr.op1_kind() {
         OpKind::Register => {
             let (src, _) = reg(instr.op1_register(), perm)?;
-            ops.push(Bc::Alu { op: alu, size, dst, kind: 0, src, imm: 0 });
+            mba::liftAlu(alu, size, dst, 0, src, 0, ops);
         }
         OpKind::Immediate8 | OpKind::Immediate8to16 | OpKind::Immediate8to32 | OpKind::Immediate8to64
         | OpKind::Immediate16 | OpKind::Immediate32 | OpKind::Immediate32to64 | OpKind::Immediate64 => {
-            ops.push(Bc::Alu { op: alu, size, dst, kind: 1, src: 0, imm: immValue(instr, 1) });
+            mba::liftAlu(alu, size, dst, 1, 0, immValue(instr, 1), ops);
         }
         _ => return None,
     }

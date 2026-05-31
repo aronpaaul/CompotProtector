@@ -3,6 +3,7 @@ mod blob;
 mod lift;
 mod map;
 mod markers;
+mod mba;
 mod patch;
 mod poly;
 mod pushpop;

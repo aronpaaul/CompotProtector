@@ -9,7 +9,7 @@ use crate::protect::tls;
 use std::io;
 
 const VM_SECTION_FLAGS: u32 = 0xE000_0020;
-const MAX_BYTECODE: usize = 0x1000;
+const MAX_BYTECODE: usize = 0x8000;
 
 pub struct Keys {
     pub code: u32,

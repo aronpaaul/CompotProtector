@@ -89,8 +89,12 @@ static int condEval(unsigned char c, int zf, int sf, int of, int cf) {
     }
 }
 
+static inline u64 rd(u64 *R, u64 *S, unsigned i) { return i < 16 ? R[i] : S[i - 16]; }
+static inline void wr(u64 *R, u64 *S, unsigned i, u64 v) { if (i < 16) R[i] = v; else S[i - 16] = v; }
+
 static void vmRun(u64 *R, unsigned char *code) {
     u32 pc = 0;
+    u64 S[16] = {0};
     int zf = 0, sf = 0, of = 0, cf = 0;
     for (;;) {
         unsigned char *in = code + pc;
@@ -107,8 +111,8 @@ static void vmRun(u64 *R, unsigned char *code) {
         u64 mask = size == 8 ? ~0ull : 0xffffffffull;
         u64 sign = size == 8 ? 0x8000000000000000ull : 0x80000000ull;
         int bits = size == 8 ? 64 : 32;
-        u64 a = R[dst] & mask;
-        u64 b = (kind ? (u64)imm : R[src]) & mask;
+        u64 a = rd(R, S, dst) & mask;
+        u64 b = (kind ? (u64)imm : rd(R, S, src)) & mask;
         u64 res = a;
         int write = 1, setzs = 1, fadd = 0, fsub = 0;
         if (alu == 0) { res = b; setzs = 0; }
@@ -133,7 +137,7 @@ static void vmRun(u64 *R, unsigned char *code) {
         if (fadd) { cf = res < a; of = ((~(a ^ b) & (a ^ res)) & sign) != 0; }
         if (fsub) { cf = a < b; of = (((a ^ b) & (a ^ res)) & sign) != 0; }
         if (setzs) { zf = (res == 0); sf = (res & sign) != 0; }
-        if (write) R[dst] = res;
+        if (write) wr(R, S, dst, res);
         pc += 16;
     }
 }
