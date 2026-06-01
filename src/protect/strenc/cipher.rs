@@ -3,6 +3,7 @@ pub const TAG_CODE: u32 = 0x434F_4445;
 pub const TAG_IMPORT: u32 = 0x494D_5054;
 pub const TAG_STRING: u32 = 0x5354_5247;
 pub const TAG_NAMES: u32 = 0x4E41_4D45;
+pub const TAG_PARAMS: u32 = 0x5041_5241;
 
 const GOLD: u64 = 0x9E37_79B9_7F4A_7C15;
 

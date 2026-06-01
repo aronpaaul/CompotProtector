@@ -11,6 +11,7 @@ pub struct Inputs<'a> {
     pub codeLen: u32,
     pub codeBlob: &'a [u8],
     pub selfKey: u64,
+    pub paramsKey: u64,
     pub lazyInterval: u32,
     pub masterSeed: u64,
     pub textCheck: u32,

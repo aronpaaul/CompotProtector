@@ -56,6 +56,7 @@ pub fn apply(
         codeLen,
         codeBlob: &codeBlob,
         selfKey: cipher::deriveKey(seed ^ stubBind, cipher::TAG_SELF),
+        paramsKey: cipher::deriveKey(seed, cipher::TAG_PARAMS),
         lazyInterval: opts.lazyIntervalMs,
         masterSeed: seed ^ super::envkey::envExpected() as u64 ^ stubBind,
         textCheck,

@@ -77,6 +77,9 @@ pub fn build(img: &PeImage, opts: &ProtectionOptions, inp: &Inputs) -> Built {
         textCheck: inp.textCheck,
     };
     content[PARAMS_OFF..PARAMS_OFF + PARAMS_LEN].copy_from_slice(&params.toBytes());
+    cipher::stream(&mut content[PARAMS_OFF..PARAMS_OFF + 132], inp.paramsKey, 0);
+    cipher::stream(&mut content[PARAMS_OFF + 140..PARAMS_OFF + 168], inp.paramsKey, 140);
+    cipher::stream(&mut content[PARAMS_OFF + 176..PARAMS_OFF + PARAMS_LEN], inp.paramsKey, 176);
     cipher::stream(&mut content[0..ENC_END], inp.selfKey, 0);
     patchJunk(&mut content, inp.masterSeed);
     Built {
