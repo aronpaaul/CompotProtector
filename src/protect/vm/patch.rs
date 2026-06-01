@@ -20,6 +20,9 @@ pub fn install(img: &mut PeImage, target: &Target, blob: &[u8], bytecode: &[u8],
     if bytecode.len() > MAX_BYTECODE {
         return Err(io::Error::other("virtualized bytecode too large"));
     }
+    if target.blockLen < 29 {
+        return Err(io::Error::other("marked block too small"));
+    }
     tls::clearDynamicBase(img);
     let base = img.imageBase();
     let predicted = alignUp(maxVirtualEnd(img), img.sectionAlignment());

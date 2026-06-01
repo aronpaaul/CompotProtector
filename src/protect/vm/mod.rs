@@ -30,6 +30,12 @@ pub fn apply(img: &mut PeImage, opts: &ProtectionOptions) -> io::Result<usize> {
     let mut done = 0usize;
     for target in &targets {
         seed = seed.wrapping_mul(0x9E37_79B9_7F4A_7C15).wrapping_add(0xD1B5_4A32_D192_ED03);
+        if target.blockLen < 29 {
+            continue;
+        }
+        if headerSlotsLeft(img) <= 3 {
+            break;
+        }
         let region = img.data[target.regionFileOff..target.regionFileOff + target.regionLen].to_vec();
         let poly = poly::generate(seed);
         let bytecode = match lift::lift(&region, target.regionRva as u64, &poly.regToSlot, poly.shuffleSeed, poly.bytecodeKey) {
@@ -37,8 +43,15 @@ pub fn apply(img: &mut PeImage, opts: &ProtectionOptions) -> io::Result<usize> {
             None => continue,
         };
         let keys = Keys { code: poly.codeKey, bytecode: poly.bytecodeKey };
-        patch::install(img, target, &poly.blob, &bytecode, &keys)?;
+        if patch::install(img, target, &poly.blob, &bytecode, &keys).is_err() {
+            break;
+        }
         done += 1;
     }
     Ok(done)
+}
+
+fn headerSlotsLeft(img: &PeImage) -> usize {
+    let used = img.sectionTableOff() + img.numberOfSections() as usize * 40;
+    (img.sizeOfHeaders() as usize).saturating_sub(used) / 40
 }

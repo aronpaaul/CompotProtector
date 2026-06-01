@@ -19,9 +19,9 @@ pub fn liftOne(instr: &Instruction, ops: &mut Vec<Bc>, perm: &[u8; 16]) -> Optio
         return mem::lea(instr, ops, perm);
     }
     if let Some(cond) = cmovCode(m) {
-        let (dst, _) = reg(instr.op0_register(), perm)?;
+        let (dst, size) = reg(instr.op0_register(), perm)?;
         let (src, _) = reg(instr.op1_register(), perm)?;
-        ops.push(Bc::Cmov { cond, dst, src });
+        ops.push(Bc::Cmov { cond, size, dst, src });
         return Some(());
     }
     if matches!(m, Mnemonic::Movzx | Mnemonic::Movsx | Mnemonic::Movsxd) {

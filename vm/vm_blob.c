@@ -48,7 +48,12 @@ __attribute__((naked, used)) void vmEnter(void) {
         "mov ecx, [r10+8]\n"
         "mov edx, [r10+12]\n"
         "add qword ptr [rsp+128], 24\n"
-        "sub rsp, 0x1010\n"
+        "mov eax, 9\n"
+        "3:\n"
+        "sub rsp, 0x1000\n"
+        "mov byte ptr [rsp], 0\n"
+        "dec eax\n"
+        "jnz 3b\n"
         "and rsp, -16\n"
         "mov rdi, rsp\n"
         "xor r8d, r8d\n"
@@ -126,7 +131,9 @@ static void vmRun(u64 *R, unsigned char *code, u32 masks) {
             continue;
         }
         if (op == 0x41) {
-            if (condEval(d[1], zf, sf, of, cf)) wr(R, S, d[3], rd(R, S, d[5]));
+            u64 cv = condEval(d[1], zf, sf, of, cf) ? rd(R, S, d[5]) : rd(R, S, d[3]);
+            if (d[2] == 4) cv &= 0xffffffffull;
+            wr(R, S, d[3], cv);
             pc += 16;
             continue;
         }

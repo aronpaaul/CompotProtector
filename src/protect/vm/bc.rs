@@ -4,7 +4,7 @@ use std::collections::HashMap;
 pub enum Bc {
     Alu { op: u8, size: u8, dst: u8, kind: u8, src: u8, imm: i64 },
     Mem { mode: u8, size: u8, reg: u8, base: u8, index: u8, scale: u8, disp: i64 },
-    Cmov { cond: u8, dst: u8, src: u8 },
+    Cmov { cond: u8, size: u8, dst: u8, src: u8 },
     Jmp(u64),
     Jcc(u8, u64),
     JmpAbs(u32),
@@ -46,9 +46,10 @@ pub fn serialize(ops: &[Bc], ipToOff: &HashMap<u64, u32>, base: u32) -> Option<V
                 w[6] = *scale;
                 w[8..].copy_from_slice(&disp.to_le_bytes());
             }
-            Bc::Cmov { cond, dst, src } => {
+            Bc::Cmov { cond, size, dst, src } => {
                 w[0] = 0x41;
                 w[1] = *cond;
+                w[2] = *size;
                 w[3] = *dst;
                 w[5] = *src;
             }
