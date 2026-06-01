@@ -98,8 +98,7 @@ stNoVm:
     call  integrityCheck
     cmp   eax, [rdi+P_ICHECK]
     je    stIntOk
-    lea   rdx, [rip+tamperMsg]
-    call  showTamper
+    xor   dword ptr [rdi+P_SEED], 0x2A5C3E97
 stIntOk:
     call  applyStrings
     call  applyCode
@@ -208,15 +207,8 @@ adDone:
     pop   rbp
     ret
 adKill:
-    mov   rcx, [rdi+P_K32]
-    mov   edx, [rdi+P_HEXIT]
-    call  findExportByHash
-    test  rax, rax
-    jz    adHard
-    xor   ecx, ecx
-    call  rax
-adHard:
-    ud2
+    xor   dword ptr [rdi+P_SEED], 0x9D2E7A41
+    jmp   adDone
 
 antiVm:
     push  rbx
@@ -224,7 +216,10 @@ antiVm:
     cpuid
     bt    ecx, 31
     pop   rbx
-    jc    adKill
+    jc    avKill
+    ret
+avKill:
+    xor   dword ptr [rdi+P_SEED], 0x4F8B16C3
     ret
 
 callOriginals:
