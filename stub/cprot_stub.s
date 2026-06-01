@@ -1515,16 +1515,6 @@ ehLoop:
     inc   edx
     jmp   ehLoop
 ehDone:
-    mov   r9d, eax
-    mov   eax, 1
-    xor   ecx, ecx
-    cpuid
-    xor   r9d, eax
-    rol   r9d, 7
-    xor   r9d, ecx
-    rol   r9d, 7
-    xor   r9d, edx
-    mov   eax, r9d
     pop   rsi
     pop   rbx
     ret
