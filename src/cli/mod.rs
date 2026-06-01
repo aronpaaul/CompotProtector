@@ -58,6 +58,7 @@ OPTIONS:\n  \
 --no-encrypt-code       do not encrypt the .text section (every function)\n  \
 --lazy                  lazy mode: decrypt .text on-demand via VEH (anti-dump)\n  \
 --lazy-interval <ms>    lazy re-encryption period (default 50)\n  \
+--no-watermark          do not stamp the CompotProtector watermark\n  \
 -h, --help              show this help"
     );
 }

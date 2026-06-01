@@ -8,6 +8,7 @@ pub mod report;
 pub mod strenc;
 pub mod tls;
 pub mod vm;
+pub mod watermark;
 
 pub use engine::protect;
 pub use options::ProtectionOptions;

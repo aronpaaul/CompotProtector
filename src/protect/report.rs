@@ -13,13 +13,14 @@ pub struct ProtectReport {
     pub encryptedCode: usize,
     pub poisonedDirs: usize,
     pub poisonedSections: usize,
+    pub watermarkId: u64,
     pub outputBytes: usize,
 }
 
 impl ProtectReport {
     pub fn summary(&self) -> String {
         format!(
-            "symbols stripped: {} | debug sections removed: {} | strings detected: {} encrypted: {} (re-encrypt: {}) | imports hidden: {} funcs in {} dlls (re-encrypt: {}) | anti-debug: {} | virtualized regions: {} | .text encrypted: {} bytes | poisoned dirs: {} | poisoned sections: {} | output: {} bytes",
+            "symbols stripped: {} | debug sections removed: {} | strings detected: {} encrypted: {} (re-encrypt: {}) | imports hidden: {} funcs in {} dlls (re-encrypt: {}) | anti-debug: {} | virtualized regions: {} | .text encrypted: {} bytes | poisoned dirs: {} | poisoned sections: {} | watermark: {:016X} | output: {} bytes",
             self.symbolsStripped,
             self.removedDebugSections,
             onoff(self.stringsDetected),
@@ -33,6 +34,7 @@ impl ProtectReport {
             self.encryptedCode,
             self.poisonedDirs,
             self.poisonedSections,
+            self.watermarkId,
             self.outputBytes
         )
     }

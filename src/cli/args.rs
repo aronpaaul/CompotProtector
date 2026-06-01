@@ -35,6 +35,7 @@ pub fn parse(argv: &[String]) -> Result<Parsed, String> {
             "--no-encrypt-code" => opts.encryptCode = false,
             "--lazy" => opts.lazy = true,
             "--lazy-interval" => opts.lazyIntervalMs = numeric(argv, &mut i, arg)?,
+            "--no-watermark" => opts.watermark = false,
             other => return Err(format!("unknown argument: {other}")),
         }
         i += 1;

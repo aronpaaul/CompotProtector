@@ -33,6 +33,7 @@ pub struct ProtectionOptions {
     pub encryptCode: bool,
     pub lazy: bool,
     pub lazyIntervalMs: u32,
+    pub watermark: bool,
 }
 
 impl Default for DebugOptions {
@@ -72,6 +73,7 @@ impl Default for ProtectionOptions {
             encryptCode: true,
             lazy: false,
             lazyIntervalMs: 50,
+            watermark: true,
         }
     }
 }

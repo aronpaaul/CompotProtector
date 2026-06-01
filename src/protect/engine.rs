@@ -2,9 +2,10 @@ use super::options::ProtectionOptions;
 use super::pe::image::PeImage;
 use super::progress::{report, ProgressFn};
 use super::report::ProtectReport;
-use super::{debugstrip, strenc, vm};
+use super::{debugstrip, strenc, vm, watermark};
 use std::io;
 use std::path::Path;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 pub fn protect(
     input: &Path,
@@ -44,9 +45,23 @@ pub fn protect(
         strenc::apply(&mut img, &found, opts, &mut rep)?;
     }
 
+    if opts.watermark {
+        report(sink, 0.93, "Stamping watermark");
+        let id = watermarkId();
+        watermark::apply(&mut img, id);
+        rep.watermarkId = id;
+    }
     report(sink, 0.95, "Writing output");
     img.save(output)?;
     rep.outputBytes = img.data.len();
     report(sink, 1.0, "Done");
     Ok(rep)
+}
+
+fn watermarkId() -> u64 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|d| d.as_nanos() as u64)
+        .unwrap_or(0x436F_6D70_6F74_5072)
+        | 1
 }
