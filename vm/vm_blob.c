@@ -118,6 +118,20 @@ static void vmRun(u64 *R, unsigned char *code, u32 masks) {
             pc = take ? *(u32 *)(in + 8) : pc + 16;
             continue;
         }
+        if (op == 0x40) {
+            unsigned char mode = in[1] ^ (unsigned char)(k >> 8);
+            unsigned char msz = in[2], mreg = in[3], mb = in[4], mi = in[5], msc = in[6];
+            i64 mdisp = *(i64 *)(in + 8);
+            u64 addr = (u64)mdisp;
+            if (mb != 0xFF) addr += rd(R, S, mb);
+            if (mi != 0xFF) addr += rd(R, S, mi) * msc;
+            if (mode == 2) { wr(R, S, mreg, msz == 4 ? (addr & 0xffffffffull) : addr); }
+            else if (mode == 1) { wr(R, S, mreg, msz == 8 ? *(u64 *)addr : *(u32 *)addr); }
+            else if (msz == 8) { *(u64 *)addr = rd(R, S, mreg); }
+            else { *(u32 *)addr = (u32)rd(R, S, mreg); }
+            pc += 16;
+            continue;
+        }
         unsigned char alu = in[1] ^ (unsigned char)(k >> 8), size = in[2], dst = in[3], kind = in[4], src = in[5];
         i64 imm = *(i64 *)(in + 8);
         u64 mask = size == 8 ? ~0ull : 0xffffffffull;

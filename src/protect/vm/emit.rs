@@ -1,6 +1,6 @@
 use super::bc::Bc;
 use super::map::{aluCode, condCode, gpr, immValue, isUnary};
-use super::mba;
+use super::{mba, mem};
 use iced_x86::{Instruction, Mnemonic, OpKind, Register};
 
 pub fn liftOne(instr: &Instruction, ops: &mut Vec<Bc>, perm: &[u8; 16]) -> Option<()> {
@@ -15,7 +15,13 @@ pub fn liftOne(instr: &Instruction, ops: &mut Vec<Bc>, perm: &[u8; 16]) -> Optio
         ops.push(Bc::Jmp(instr.near_branch64()));
         return Some(());
     }
+    if m == Mnemonic::Lea {
+        return mem::lea(instr, ops, perm);
+    }
     let alu = aluCode(m)?;
+    if instr.op0_kind() == OpKind::Memory || instr.op1_kind() == OpKind::Memory {
+        return mem::lift(instr, ops, perm, alu);
+    }
     if instr.op0_kind() != OpKind::Register {
         return None;
     }
@@ -46,7 +52,7 @@ pub fn liftOne(instr: &Instruction, ops: &mut Vec<Bc>, perm: &[u8; 16]) -> Optio
     Some(())
 }
 
-fn reg(r: Register, perm: &[u8; 16]) -> Option<(u8, u8)> {
+pub(super) fn reg(r: Register, perm: &[u8; 16]) -> Option<(u8, u8)> {
     let (idx, size) = gpr(r)?;
     Some((perm[idx as usize], size))
 }
