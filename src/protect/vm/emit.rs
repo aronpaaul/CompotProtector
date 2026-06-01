@@ -1,6 +1,6 @@
 use super::bc::Bc;
-use super::map::{aluCode, condCode, gpr, immValue, isUnary};
-use super::{mba, mem};
+use super::map::{aluCode, cmovCode, condCode, gpr, immValue, isUnary};
+use super::{mba, mem, movx};
 use iced_x86::{Instruction, Mnemonic, OpKind, Register};
 
 pub fn liftOne(instr: &Instruction, ops: &mut Vec<Bc>, perm: &[u8; 16]) -> Option<()> {
@@ -17,6 +17,23 @@ pub fn liftOne(instr: &Instruction, ops: &mut Vec<Bc>, perm: &[u8; 16]) -> Optio
     }
     if m == Mnemonic::Lea {
         return mem::lea(instr, ops, perm);
+    }
+    if let Some(cond) = cmovCode(m) {
+        let (dst, _) = reg(instr.op0_register(), perm)?;
+        let (src, _) = reg(instr.op1_register(), perm)?;
+        ops.push(Bc::Cmov { cond, dst, src });
+        return Some(());
+    }
+    if matches!(m, Mnemonic::Movzx | Mnemonic::Movsx | Mnemonic::Movsxd) {
+        return movx::lift(instr, ops, perm, m);
+    }
+    if m == Mnemonic::Xchg {
+        let (a, size) = reg(instr.op0_register(), perm)?;
+        let (b, _) = reg(instr.op1_register(), perm)?;
+        ops.push(Bc::Alu { op: 0, size, dst: 24, kind: 0, src: a, imm: 0 });
+        ops.push(Bc::Alu { op: 0, size, dst: a, kind: 0, src: b, imm: 0 });
+        ops.push(Bc::Alu { op: 0, size, dst: b, kind: 0, src: 24, imm: 0 });
+        return Some(());
     }
     let alu = aluCode(m)?;
     if instr.op0_kind() == OpKind::Memory || instr.op1_kind() == OpKind::Memory {

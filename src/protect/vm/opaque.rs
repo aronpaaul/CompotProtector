@@ -28,16 +28,25 @@ fn alu(ops: &mut Vec<Bc>, op: u8, dst: u8, kind: u8, src: u8, imm: i64) {
 }
 
 pub fn emit(ops: &mut Vec<Bc>, salt: usize) {
+    let v = salt % 3;
     alu(ops, 0, T, 0, X, 0);
-    alu(ops, 0, U, 0, X, 0);
+    if v == 2 {
+        alu(ops, 5, T, 1, 0, 1);
+    }
+    alu(ops, 0, U, 0, T, 0);
     alu(ops, 6, U, 0, T, 0);
-    alu(ops, 2, U, 0, T, 0);
+    if v == 0 {
+        alu(ops, 2, U, 0, T, 0);
+    } else if v == 1 {
+        alu(ops, 1, U, 0, T, 0);
+    }
     alu(ops, 4, U, 1, 0, 1);
+    let cond = if v == 2 { 5 } else { 4 };
     let jpos = ops.len();
-    ops.push(Bc::JccAbs(4, 0));
+    ops.push(Bc::JccAbs(cond, 0));
     alu(ops, 0, J, 1, 0, ((salt as i64) << 8) | 0xCD);
     alu(ops, 1, J, 0, X, 0);
     alu(ops, 3, J, 0, T, 0);
     let target = (ops.len() * 16) as u32;
-    ops[jpos] = Bc::JccAbs(4, target);
+    ops[jpos] = Bc::JccAbs(cond, target);
 }

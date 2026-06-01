@@ -109,31 +109,51 @@ static void vmRun(u64 *R, unsigned char *code, u32 masks) {
     int zf = 0, sf = 0, of = 0, cf = 0;
     for (;;) {
         unsigned char *in = code + pc;
-        u32 k = keyAt(masks, pc >> 4);
-        unsigned char op = in[0] ^ (unsigned char)k;
+        unsigned char d[16];
+        for (int q = 0; q < 4; q++) {
+            u32 kk = keyAt(masks, (pc >> 4) * 4 + q);
+            d[q * 4 + 0] = in[q * 4 + 0] ^ (unsigned char)kk;
+            d[q * 4 + 1] = in[q * 4 + 1] ^ (unsigned char)(kk >> 8);
+            d[q * 4 + 2] = in[q * 4 + 2] ^ (unsigned char)(kk >> 16);
+            d[q * 4 + 3] = in[q * 4 + 3] ^ (unsigned char)(kk >> 24);
+        }
+        unsigned char op = d[0];
         if (op == 0x30) return;
-        if (op == 0x20) { pc = *(u32 *)(in + 8); continue; }
+        if (op == 0x20) { pc = *(u32 *)(d + 8); continue; }
         if (op == 0x21) {
-            int take = condEval(in[1] ^ (unsigned char)(k >> 8), zf, sf, of, cf);
-            pc = take ? *(u32 *)(in + 8) : pc + 16;
+            int take = condEval(d[1], zf, sf, of, cf);
+            pc = take ? *(u32 *)(d + 8) : pc + 16;
+            continue;
+        }
+        if (op == 0x41) {
+            if (condEval(d[1], zf, sf, of, cf)) wr(R, S, d[3], rd(R, S, d[5]));
+            pc += 16;
             continue;
         }
         if (op == 0x40) {
-            unsigned char mode = in[1] ^ (unsigned char)(k >> 8);
-            unsigned char msz = in[2], mreg = in[3], mb = in[4], mi = in[5], msc = in[6];
-            i64 mdisp = *(i64 *)(in + 8);
+            unsigned char mode = d[1], msz = d[2], mreg = d[3], mb = d[4], mi = d[5], msc = d[6];
+            i64 mdisp = *(i64 *)(d + 8);
             u64 addr = (u64)mdisp;
             if (mb != 0xFF) addr += rd(R, S, mb);
             if (mi != 0xFF) addr += rd(R, S, mi) * msc;
             if (mode == 2) { wr(R, S, mreg, msz == 4 ? (addr & 0xffffffffull) : addr); }
-            else if (mode == 1) { wr(R, S, mreg, msz == 8 ? *(u64 *)addr : *(u32 *)addr); }
-            else if (msz == 8) { *(u64 *)addr = rd(R, S, mreg); }
-            else { *(u32 *)addr = (u32)rd(R, S, mreg); }
+            else if (mode == 1) {
+                u64 v = msz == 8 ? *(u64 *)addr : msz == 4 ? *(u32 *)addr : msz == 2 ? *(unsigned short *)addr : *(unsigned char *)addr;
+                wr(R, S, mreg, v);
+            } else if (mode == 3) {
+                i64 v = msz == 4 ? *(int *)addr : msz == 2 ? *(short *)addr : *(signed char *)addr;
+                wr(R, S, mreg, (u64)v);
+            } else {
+                if (msz == 8) *(u64 *)addr = rd(R, S, mreg);
+                else if (msz == 4) *(u32 *)addr = (u32)rd(R, S, mreg);
+                else if (msz == 2) *(unsigned short *)addr = (unsigned short)rd(R, S, mreg);
+                else *(unsigned char *)addr = (unsigned char)rd(R, S, mreg);
+            }
             pc += 16;
             continue;
         }
-        unsigned char alu = in[1] ^ (unsigned char)(k >> 8), size = in[2], dst = in[3], kind = in[4], src = in[5];
-        i64 imm = *(i64 *)(in + 8);
+        unsigned char alu = d[1], size = d[2], dst = d[3], kind = d[4], src = d[5];
+        i64 imm = *(i64 *)(d + 8);
         u64 mask = size == 8 ? ~0ull : 0xffffffffull;
         u64 sign = size == 8 ? 0x8000000000000000ull : 0x80000000ull;
         int bits = size == 8 ? 64 : 32;

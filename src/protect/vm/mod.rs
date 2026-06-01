@@ -9,6 +9,8 @@ mod map;
 mod markers;
 mod mba;
 mod mem;
+mod memalu;
+mod movx;
 mod opaque;
 mod patch;
 mod poly;

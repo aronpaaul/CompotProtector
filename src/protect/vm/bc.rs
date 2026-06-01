@@ -4,6 +4,7 @@ use std::collections::HashMap;
 pub enum Bc {
     Alu { op: u8, size: u8, dst: u8, kind: u8, src: u8, imm: i64 },
     Mem { mode: u8, size: u8, reg: u8, base: u8, index: u8, scale: u8, disp: i64 },
+    Cmov { cond: u8, dst: u8, src: u8 },
     Jmp(u64),
     Jcc(u8, u64),
     JmpAbs(u32),
@@ -45,6 +46,12 @@ pub fn serialize(ops: &[Bc], ipToOff: &HashMap<u64, u32>, base: u32) -> Option<V
                 w[6] = *scale;
                 w[8..].copy_from_slice(&disp.to_le_bytes());
             }
+            Bc::Cmov { cond, dst, src } => {
+                w[0] = 0x41;
+                w[1] = *cond;
+                w[3] = *dst;
+                w[5] = *src;
+            }
             Bc::Jmp(ip) => {
                 w[0] = 0x20;
                 w[8..12].copy_from_slice(&ipToOff.get(ip)?.to_le_bytes());
@@ -65,9 +72,14 @@ pub fn serialize(ops: &[Bc], ipToOff: &HashMap<u64, u32>, base: u32) -> Option<V
             }
             Bc::Ret => w[0] = 0x30,
         }
-        let k = keyAt(base, idx as u32);
-        w[0] ^= k as u8;
-        w[1] ^= (k >> 8) as u8;
+        for q in 0..4u32 {
+            let b = keyAt(base, idx as u32 * 4 + q).to_le_bytes();
+            let o = (q * 4) as usize;
+            w[o] ^= b[0];
+            w[o + 1] ^= b[1];
+            w[o + 2] ^= b[2];
+            w[o + 3] ^= b[3];
+        }
         out.extend_from_slice(&w);
     }
     Some(out)

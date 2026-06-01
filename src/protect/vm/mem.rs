@@ -1,14 +1,14 @@
 use super::bc::Bc;
 use super::emit::reg;
 use super::map::{gpr, immValue};
-use super::mba;
+use super::{mba, memalu};
 use iced_x86::{Instruction, Mnemonic, OpKind, Register};
 
-const SCRATCH: u8 = 24;
+pub(super) const SCRATCH: u8 = 24;
 
 pub fn lea(instr: &Instruction, ops: &mut Vec<Bc>, perm: &[u8; 16]) -> Option<()> {
     let (dst, size) = reg(instr.op0_register(), perm)?;
-    emit(ops, 2, size, dst, instr, perm)
+    emitMem(ops, 2, size, dst, instr, perm)
 }
 
 pub fn lift(instr: &Instruction, ops: &mut Vec<Bc>, perm: &[u8; 16], alu: u8) -> Option<()> {
@@ -17,22 +17,22 @@ pub fn lift(instr: &Instruction, ops: &mut Vec<Bc>, perm: &[u8; 16], alu: u8) ->
     if m == Mnemonic::Mov {
         if o0 == OpKind::Register && o1 == OpKind::Memory {
             let (dst, size) = reg(instr.op0_register(), perm)?;
-            return emit(ops, 1, size, dst, instr, perm);
+            return emitMem(ops, 1, size, dst, instr, perm);
         }
         if o0 == OpKind::Memory && o1 == OpKind::Register {
             let (src, size) = reg(instr.op1_register(), perm)?;
-            return emit(ops, 0, size, src, instr, perm);
+            return emitMem(ops, 0, size, src, instr, perm);
         }
         if o0 == OpKind::Memory && isImm(o1) {
             let size = memSize(instr)?;
             ops.push(Bc::Alu { op: 0, size, dst: SCRATCH, kind: 1, src: 0, imm: immValue(instr, 1) });
-            return emit(ops, 0, size, SCRATCH, instr, perm);
+            return emitMem(ops, 0, size, SCRATCH, instr, perm);
         }
         return None;
     }
     if o0 == OpKind::Register && o1 == OpKind::Memory && instr.op_count() == 2 {
         let (dst, size) = reg(instr.op0_register(), perm)?;
-        emit(ops, 1, size, SCRATCH, instr, perm)?;
+        emitMem(ops, 1, size, SCRATCH, instr, perm)?;
         if mba::mbaable(alu) {
             mba::liftAlu(alu, size, dst, 0, SCRATCH, 0, ops);
         } else {
@@ -40,10 +40,10 @@ pub fn lift(instr: &Instruction, ops: &mut Vec<Bc>, perm: &[u8; 16], alu: u8) ->
         }
         return Some(());
     }
-    None
+    memalu::lift(instr, ops, perm, alu)
 }
 
-fn emit(ops: &mut Vec<Bc>, mode: u8, size: u8, dataReg: u8, instr: &Instruction, perm: &[u8; 16]) -> Option<()> {
+pub(super) fn emitMem(ops: &mut Vec<Bc>, mode: u8, size: u8, dataReg: u8, instr: &Instruction, perm: &[u8; 16]) -> Option<()> {
     if instr.is_ip_rel_memory_operand() {
         return None;
     }
@@ -77,9 +77,9 @@ fn isImm(k: OpKind) -> bool {
     )
 }
 
-fn memSize(instr: &Instruction) -> Option<u8> {
+pub(super) fn memSize(instr: &Instruction) -> Option<u8> {
     let s = instr.memory_size().size();
-    if s == 4 || s == 8 {
+    if s == 1 || s == 2 || s == 4 || s == 8 {
         Some(s as u8)
     } else {
         None

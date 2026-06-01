@@ -60,6 +60,24 @@ pub fn condCode(m: Mnemonic) -> Option<u8> {
     })
 }
 
+pub fn cmovCode(m: Mnemonic) -> Option<u8> {
+    Some(match m {
+        Mnemonic::Cmovb => 2,
+        Mnemonic::Cmovae => 3,
+        Mnemonic::Cmove => 4,
+        Mnemonic::Cmovne => 5,
+        Mnemonic::Cmovbe => 6,
+        Mnemonic::Cmova => 7,
+        Mnemonic::Cmovs => 8,
+        Mnemonic::Cmovns => 9,
+        Mnemonic::Cmovl => 12,
+        Mnemonic::Cmovge => 13,
+        Mnemonic::Cmovle => 14,
+        Mnemonic::Cmovg => 15,
+        _ => return None,
+    })
+}
+
 pub fn immValue(instr: &Instruction, op: u32) -> i64 {
     instr.immediate(op) as i64
 }
